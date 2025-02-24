@@ -14,29 +14,31 @@ datasource db {
 }
 
 model User {
-  id      String @id  @default(uuid())
-  email   String @unique
-  role   Role 
-  provider Provider
-  streams   Stream[]
-  upvotes  Upvote[]
+  id          String @id  @default(uuid())
+  email       String @unique
+  role        Role 
+  provider    Provider
+  streams     Stream[]
+  upvotes     Upvote[]
 }
 
 model Stream {
-   id      String @id  @default(uuid())
-   type    Streamtype
-   active  Boolean  @default(true)
-   upvotes Upvote[]
-   userId  String
-   user    User @relation(fields: [userId],references: [id])
+   id            String @id  @default(uuid())
+   type          Streamtype
+   url           String
+   extractedId   String
+   active        Boolean  @default(true)
+   upvotes       Upvote[]
+   userId        String
+   user          User @relation(fields: [userId],references: [id])
 }
 
 model Upvote {
-    id      String @id  @default(uuid())
-    userId  String
-    streamId String 
-    stream  Stream  @relation(fields: [streamId],references: [id])
-    user  User  @relation(fields: [userId],references: [id])
+    id              String @id  @default(uuid())
+    userId          String
+    streamId        String 
+    stream          Stream  @relation(fields: [streamId],references: [id])
+    user            User  @relation(fields: [userId],references: [id])
     @@unique([userId,streamId])
 }
 
