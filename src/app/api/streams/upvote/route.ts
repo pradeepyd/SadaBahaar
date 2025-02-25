@@ -18,7 +18,7 @@ export async function POST( req : NextRequest){
     const userId = session.user.id; // No DB call needed
 
     // Now you can use `userId` directly in your logic without fetching from DB
-    console.log("User ID:", userId);
+    // console.log("User ID:", userId);
 
     // return NextResponse.json({ message: "User ID retrieved", userId });
 
