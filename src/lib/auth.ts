@@ -13,6 +13,7 @@ export const authOptions = {
          secret: process.env.NEXTAUTH_SECRET,
          callbacks: {
           async signIn(params: { user: { email: string; }; account: { provider: any; }; }){
+            // console.log(params,"email custom")
             if(!params.user.email){
               return false;
             }
@@ -20,17 +21,29 @@ export const authOptions = {
               const existingUser = await prisma.user.findUnique({
                 where: { email: params.user.email },
               });
+              // console.log(existingUser,"existing user ");
               if (!existingUser) {
-              await prisma.user.create({
-                data:{
-                  email:params.user.email,
-                  role:"User",
-                  provider:params.account.provider
+                // console.log("creating user",prisma.user,params.account.provider)
+                const providerEnum = params.account.provider === "google" ? "Google" : null;
+
+                if (!providerEnum) {
+                  // console.log("Invalid provider:", params.account.provider);
+                  return false;
                 }
-              })
+          
+                const user = await prisma.user.create({
+                  data: {
+                    email: params.user.email,
+                    role: "User", // Ensure it's a valid enum value
+                    provider: providerEnum , // Explicitly cast to Provider enum
+                  },
+                });
+             
+              // console.log(user,"useeer");
             }
             } catch (error) {
-              console.log(error);
+              console.log("error")
+              console.log("error after",error)
             }
             return true;
           },
@@ -38,11 +51,11 @@ export const authOptions = {
            if (user) {
                token.id = user.id || user.sub;
            }
-           console.log("JWT Token:", token);
+          //  console.log("JWT Token:", token);
            return token;
            },
          session: ({ session, token, user }: any) => {
-          console.log("Session Token:", token);
+          // console.log("Session Token:", token);
              if (session.user) {
                  session.user.id = token.id
              }
