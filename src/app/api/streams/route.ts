@@ -12,7 +12,6 @@ const SPOTIFY_REGEX = new RegExp(
   "^https?:\\/\\/open\\.spotify\\.com\\/track\\/[\\w-]+$"
 );
 
-// const YOUTUBE_API_KEY = 'AIzaSyDvIdXjXU9KmuDV-IRoz6-TFLEauXUF00M'
 const youtube = google.youtube({ version: 'v3', auth: process.env.YOUTUBE_API_KEY });
 
 const CreateStreamSchema = z.object({
