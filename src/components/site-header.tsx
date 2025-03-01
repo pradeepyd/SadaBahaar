@@ -3,11 +3,9 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Music } from "lucide-react"
-import { useTheme } from "next-themes"
 import { ThemeToggle } from "./theme-toggle"
 
 export function SiteHeader() {
-  const { theme } = useTheme()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -15,7 +13,7 @@ export function SiteHeader() {
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Music className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            <span className="hidden font-bold text-purple-900 dark:text-purple-50 sm:inline-block">MelodyVote</span>
+            <span className="hidden font-bold text-purple-900 dark:text-purple-50 sm:inline-block">FanMix</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link

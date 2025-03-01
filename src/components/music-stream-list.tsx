@@ -36,36 +36,7 @@ const mockStreams = [
     duration: "4:20",
     createdAt: "1 day ago",
   },
-  {
-    id: "4",
-    title: "Acoustic Covers",
-    artist: "Melody Strings",
-    genre: "Acoustic",
-    coverImage: "/placeholder.svg?height=300&width=300",
-    upvotes: 156,
-    duration: "3:58",
-    createdAt: "1 week ago",
-  },
-  {
-    id: "5",
-    title: "Rock Anthems Reimagined",
-    artist: "The Guitar Heroes",
-    genre: "Rock",
-    coverImage: "/placeholder.svg?height=300&width=300",
-    upvotes: 278,
-    duration: "4:45",
-    createdAt: "3 days ago",
-  },
-  {
-    id: "6",
-    title: "Chill Lo-Fi Study Mix",
-    artist: "Ambient Thoughts",
-    genre: "Lo-Fi",
-    coverImage: "/placeholder.svg?height=300&width=300",
-    upvotes: 423,
-    duration: "2:55",
-    createdAt: "6 hours ago",
-  },
+  // Add more mock streams as needed
 ]
 
 export function MusicStreamList() {
