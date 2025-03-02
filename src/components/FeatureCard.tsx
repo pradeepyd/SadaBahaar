@@ -1,7 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 
-
-
 export default function FeatureCard({
     icon,
     title,

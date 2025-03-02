@@ -1,7 +1,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Music, Users, ThumbsUp, ChevronRight, Share2, Sparkles } from "lucide-react"
+import { Music, Users, ChevronRight } from "lucide-react"
 
 
 const Hero = () => {

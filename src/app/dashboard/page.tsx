@@ -3,6 +3,8 @@ import { SiteHeader } from "@/components/site-header"
 import { Sidebar } from "@/components/sidebar"
 import { AddStreamButton } from "@/components/add-stream-button"
 import { FooterSection } from "@/components/FooterSection"
+import { ExpandableCardDemo } from "@/components/ui/expandable-card"
+import { CreatorDashboard } from "@/components/Dashboard"
 
 export default function Home() {
   return (
@@ -16,6 +18,8 @@ export default function Home() {
             <AddStreamButton />
           </div>
           <MusicStreamList />
+          <CreatorDashboard/>
+          <ExpandableCardDemo/>
         </main>
       </div>
       <FooterSection />

@@ -42,7 +42,7 @@ export const authOptions = {
               // console.log(user,"useeer");
             }
             } catch (error) {
-              console.log("error")
+              // console.log("error")
               console.log("error after",error)
             }
             return true;
