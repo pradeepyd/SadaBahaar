@@ -6,7 +6,6 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface AddStreamFormProps {
   onAddSong: (youtubeId: string, title: string, artist: string, thumbnail?: string) => void
@@ -14,61 +13,39 @@ interface AddStreamFormProps {
 
 export function AddStreamForm({ onAddSong }: AddStreamFormProps) {
   const [youtubeUrl, setYoutubeUrl] = useState("")
-  const [title, setTitle] = useState("")
-  const [artist, setArtist] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const youtubeId = extractYoutubeId(youtubeUrl)
-    if (youtubeId && title && artist) {
-      const thumbnail = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
-      onAddSong(youtubeId, title, artist, thumbnail)
-      setYoutubeUrl("")
-      setTitle("")
-      setArtist("")
-    }
-  }
-
-  const extractYoutubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
-    return match && match[2].length === 11 ? match[2] : null
+    // Functionality removed as per request
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5 text-primary" />
-          Add Stream
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+        <Plus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        Add Stream
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex gap-2">
           <Input
             type="text"
             placeholder="YouTube URL"
             value={youtubeUrl}
             onChange={(e) => setYoutubeUrl(e.target.value)}
-            required
+            className="flex-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white border-gray-300 dark:border-gray-600"
           />
-          <Input
-            type="text"
-            placeholder="Song Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-          <Input type="text" placeholder="Artist" value={artist} onChange={(e) => setArtist(e.target.value)} required />
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-            Add Song
+          <Button
+            type="submit"
+            className="bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600"
+          >
+            Add
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Paste a YouTube video URL and provide song details to add to your stream queue
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Paste a YouTube video URL to add to your stream queue
+        </p>
+      </form>
+    </div>
   )
 }
 
