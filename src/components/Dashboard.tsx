@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
- import { Music, Share2, SkipForward } from "lucide-react"
+import { Music, Share2, SkipForward } from "lucide-react"
 import { YouTubeEmbed } from "@/components/youtube-embed"
 import { SongQueue } from "@/components/song-queue"
 import { AddStreamForm } from "@/components/add-stream-form"
@@ -29,109 +29,84 @@ interface Song {
 const initialSongs: Song[] = [
   {
     id: "1",
-    title: "Summertime Sadness",
-    artist: "Lana Del Rey",
-    youtubeId: "TdrL3QxjyVw",
+    title: "Lofi Hip Hop - Beats to Relax/Study to",
+    artist: "Lofi Girl",
+    youtubeId: "5qap5aO4i9A",
     upvotes: 15,
     downvotes: 2,
-    thumbnail: "https://i.ytimg.com/vi/TdrL3QxjyVw/hqdefault.jpg",
+    thumbnail: "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg",
   },
   {
     id: "2",
-    title: "Mitran Di Chhatri",
-    artist: "Babbu Maan",
-    youtubeId: "vqRWMDv0r78",
-    upvotes: 10,
+    title: "Chill Mix - Lo-fi Beats",
+    artist: "ChilledCow",
+    youtubeId: "DWcJFNfaw9c",
+    upvotes: 8,
     downvotes: 1,
-    thumbnail: "https://i.ytimg.com/vi/vqRWMDv0r78/hqdefault.jpg",
+    thumbnail: "https://i.ytimg.com/vi/DWcJFNfaw9c/hqdefault.jpg",
   },
   {
     id: "3",
-    title: "For Whom The Bell Tolls",
-    artist: "Metallica",
-    youtubeId: "eeqGuaAl6Ic",
-    upvotes: 20,
-    downvotes: 3,
-    thumbnail: "https://i.ytimg.com/vi/eeqGuaAl6Ic/hqdefault.jpg",
+    title: "Jazz Vibes for Work & Study",
+    artist: "Cafe Music BGM",
+    youtubeId: "Dx5qFachd3A",
+    upvotes: 5,
+    downvotes: 0,
+    thumbnail: "https://i.ytimg.com/vi/Dx5qFachd3A/hqdefault.jpg",
   },
   {
     id: "4",
-    title: "Stairway To Heaven",
-    artist: "Led Zeppelin",
-    youtubeId: "QkF3oxziUI4",
-    upvotes: 25,
-    downvotes: 1,
-    thumbnail: "https://i.ytimg.com/vi/QkF3oxziUI4/hqdefault.jpg",
+    title: "Deep Focus Music",
+    artist: "Concentration Music",
+    youtubeId: "tfBVp0Zi2iE",
+    upvotes: 12,
+    downvotes: 3,
+    thumbnail: "https://i.ytimg.com/vi/tfBVp0Zi2iE/hqdefault.jpg",
   },
   {
     id: "5",
-    title: "Toh Phir Aao",
-    artist: "Mustafa Zahid",
-    youtubeId: "D8XFTgJSleA",
-    upvotes: 12,
+    title: "Ambient Study Music",
+    artist: "Relaxing Soundscapes",
+    youtubeId: "sjkrrmBnpGE",
+    upvotes: 7,
+    downvotes: 1,
+    thumbnail: "https://i.ytimg.com/vi/sjkrrmBnpGE/hqdefault.jpg",
+  },
+  {
+    id: "6",
+    title: "Peaceful Piano & Soft Rain Sounds",
+    artist: "Relaxing Music",
+    youtubeId: "XYuLIoWWsIc",
+    upvotes: 20,
     downvotes: 2,
-    thumbnail: "https://i.ytimg.com/vi/D8XFTgJSleA/hqdefault.jpg",
+    thumbnail: "https://i.ytimg.com/vi/XYuLIoWWsIc/hqdefault.jpg",
+  },
+  {
+    id: "7",
+    title: "Acoustic Guitar Instrumentals",
+    artist: "Acoustic Tunes",
+    youtubeId: "bpA_5a0miWk",
+    upvotes: 9,
+    downvotes: 1,
+    thumbnail: "https://i.ytimg.com/vi/bpA_5a0miWk/hqdefault.jpg",
   },
 ]
 
 export function CreatorDashboard() {
-  const [songs, setSongs] = useState<Song[]>(initialSongs)
-  const [currentSong, setCurrentSong] = useState<Song | null>(null)
-
-  const addSong = (youtubeId: string, title: string, artist: string, thumbnail?: string) => {
-    const newSong: Song = {
-      id: Date.now().toString(),
-      title,
-      artist,
-      youtubeId,
-      upvotes: 0,
-      downvotes: 0,
-      thumbnail,
-    }
-    setSongs((prevSongs) => [...prevSongs, newSong])
-    if (!currentSong) {
-      setCurrentSong(newSong)
-    }
-  }
-
-  const upvoteSong = (id: string) => {
-    setSongs((prevSongs) => prevSongs.map((song) => (song.id === id ? { ...song, upvotes: song.upvotes + 1 } : song)))
-  }
-
-  const downvoteSong = (id: string) => {
-    setSongs((prevSongs) =>
-      prevSongs.map((song) => (song.id === id ? { ...song, downvotes: song.downvotes + 1 } : song)),
-    )
-  }
-
-  const playNext = () => {
-    if (songs.length > 0) {
-      const nextSong = songs[0]
-      setCurrentSong(nextSong)
-      setSongs((prevSongs) => prevSongs.slice(1))
-    } else {
-      setCurrentSong(null)
-    }
-  }
-
-  const playSong = (song: Song) => {
-    const songIndex = songs.findIndex((s) => s.id === song.id)
-    if (songIndex !== -1) {
-      setCurrentSong(song)
-      setSongs((prevSongs) => [...prevSongs.slice(0, songIndex), ...prevSongs.slice(songIndex + 1)])
-    }
-  }
+  const [songs] = useState<Song[]>(initialSongs)
+  const [currentSong] = useState<Song | null>(songs[0])
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : ""
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2">
-        <div className="bg-card rounded-lg shadow-sm border p-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-screen">
+      <div className="space-y-6 overflow-y-auto">
+        <AddStreamForm onAddSong={() => {}} />
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Music className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Now Playing</h2>
+              <Music className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Now Playing</h2>
             </div>
             <Dialog>
               <DialogTrigger asChild>
@@ -147,53 +122,35 @@ export function CreatorDashboard() {
                 </DialogHeader>
                 <div className="flex gap-2">
                   <Input readOnly value={shareUrl} onClick={(e) => e.currentTarget.select()} />
-                  <Button
-                    onClick={() => {
-                      navigator.clipboard.writeText(shareUrl)
-                    }}
-                  >
-                    Copy
-                  </Button>
+                  <Button>Copy</Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
           {currentSong ? (
             <>
-              <YouTubeEmbed youtubeId={currentSong.youtubeId} onEnded={playNext} />
-              <div className="mt-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{currentSong.title}</h3>
-                    <p className="text-sm text-muted-foreground">{currentSong.artist}</p>
-                  </div>
-                  <Button variant="secondary" size="sm" className="gap-2" onClick={playNext}>
-                    <SkipForward className="h-4 w-4" />
-                    Play Next
-                  </Button>
-                </div>
+              <YouTubeEmbed youtubeId={currentSong.youtubeId} onEnded={() => {}} />
+              <div className="mt-4">
+                <h3 className="font-medium text-gray-800 dark:text-white">{currentSong.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{currentSong.artist}</p>
               </div>
             </>
           ) : (
-            <div className="aspect-video bg-accent/50 rounded-lg flex flex-col items-center justify-center space-y-4">
-              <p className="text-muted-foreground">No song currently playing</p>
-              <Button variant="secondary" size="sm" className="gap-2" onClick={playNext} disabled={songs.length === 0}>
-                <SkipForward className="h-4 w-4" />
-                Play Next
-              </Button>
+            <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              <p className="text-gray-500 dark:text-gray-400">No song currently playing</p>
             </div>
-          )} 
+          )}
+          <Button className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
+            <SkipForward className="h-4 w-4 mr-2" />
+            Play Next
+          </Button>
         </div>
+        {/* <div className="lg:hidden">
+          <SongQueue songs={songs} onUpvote={() => {}} onDownvote={() => {}} />
+        </div> */}
       </div>
-       <div className="space-y-6">
-        <AddStreamForm onAddSong={addSong} />
-        <div className="bg-card rounded-lg shadow-sm border p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Music className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">Song Queue</h2>
-          </div>
-          <SongQueue songs={songs} onUpvote={upvoteSong} onDownvote={downvoteSong} onPlay={playSong} />
-        </div>
+      <div className="h-full overflow-y-auto">
+        <SongQueue songs={songs} onUpvote={() => {}} onDownvote={() => {}} />
       </div>
     </div>
   )
