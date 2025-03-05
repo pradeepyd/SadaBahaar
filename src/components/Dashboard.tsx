@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Music, Share2, SkipForward } from "lucide-react"
 import { YouTubeEmbed } from "@/components/youtube-embed"
 import { SongQueue } from "@/components/song-queue"
@@ -15,6 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { ExpandableCardDemo } from "./ui/expandable-card"
+import axios from "axios"
 
 interface Song {
   id: string
@@ -93,16 +95,28 @@ const initialSongs: Song[] = [
 ]
 
 export function CreatorDashboard() {
+  const REFRESH_TIME = 10 * 1000;
   const [songs] = useState<Song[]>(initialSongs)
   const [currentSong] = useState<Song | null>(songs[0])
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : ""
+  
+  async function refreshfunction(){
+    const res = await axios.get("/api/streams/myStreams");
+    console.log(res);
+  }
+  useEffect(()=>{
+    refreshfunction();
+    setInterval(()=>{
+
+    },REFRESH_TIME)
+  },[])
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-screen">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-6 mr-2 ml-2">
       <div className="space-y-6 overflow-y-auto">
         <AddStreamForm onAddSong={() => {}} />
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Music className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -149,7 +163,8 @@ export function CreatorDashboard() {
           <SongQueue songs={songs} onUpvote={() => {}} onDownvote={() => {}} />
         </div> */}
       </div>
-      <div className="h-full overflow-y-auto">
+      {/* <ExpandableCardDemo/> */}
+      <div className="">
         <SongQueue songs={songs} onUpvote={() => {}} onDownvote={() => {}} />
       </div>
     </div>
