@@ -8,7 +8,7 @@ import { Providers } from "./Providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MelodyVote - Interactive Music Streaming Platform",
+  title: "FanMix - Interactive Music Streaming Platform",
   description: "Let your fans choose what plays next in your music streams",
 };
 
