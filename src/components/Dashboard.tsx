@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Music, Share2, SkipForward } from "lucide-react"
-import { YouTubeEmbed } from "@/components/youtube-embed"
-import { SongQueue } from "@/components/song-queue"
-import { AddStreamForm } from "@/components/add-stream-form"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { Music, Share2, SkipForward } from "lucide-react";
+import { YouTubeEmbed } from "@/components/youtube-embed";
+import { SongQueue } from "@/components/song-queue";
+import { AddStreamForm } from "@/components/add-stream-form";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,19 +13,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { ExpandableCardDemo } from "./ui/expandable-card"
-import axios from "axios"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ExpandableCardDemo } from "./ui/expandable-card";
+import axios from "axios";
 
 interface Song {
-  id: string
-  title: string
-  artist: string
-  youtubeId: string
-  upvotes: number
-  downvotes: number
-  thumbnail?: string
+  id: string;
+  title: string;
+  artist: string;
+  youtubeId: string;
+  upvotes: number;
+  downvotes: number;
+  thumbnail?: string;
 }
 
 const initialSongs: Song[] = [
@@ -92,26 +92,32 @@ const initialSongs: Song[] = [
     downvotes: 1,
     thumbnail: "https://i.ytimg.com/vi/bpA_5a0miWk/hqdefault.jpg",
   },
-]
+];
 
-export function CreatorDashboard() {
+export function CreatorDashboard(id:string) {
   const REFRESH_TIME = 10 * 1000;
-  const [songs] = useState<Song[]>(initialSongs)
-  const [currentSong] = useState<Song | null>(songs[0])
+  const [songs] = useState<Song[]>(initialSongs);
+  const [currentSong] = useState<Song | null>(songs[0]);
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : ""
-  
-  async function refreshfunction(){
-    const res = await axios.get("/api/streams/myStreams");
-    console.log(res);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  async function refreshFunction() {
+    try {
+      const res = await fetch("/api/streams/myStreams",{
+        body:JSON.stringify({id})
+      });
+      console.log(res.json()); // Axios auto-parses JSON
+    } catch (error: any) {
+      console.error(
+        "Error fetching streams:",
+        error.response?.data || error.message
+      );
+    }
   }
-  useEffect(()=>{
-    refreshfunction();
-    setInterval(()=>{
-
-    },REFRESH_TIME)
-  },[])
-
+  useEffect(() => {
+    refreshFunction(); // Initial fetch
+  }, []);
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-6 mr-2 ml-2">
       <div className="space-y-6 overflow-y-auto">
@@ -120,7 +126,9 @@ export function CreatorDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Music className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Now Playing</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                Now Playing
+              </h2>
             </div>
             <Dialog>
               <DialogTrigger asChild>
@@ -132,10 +140,16 @@ export function CreatorDashboard() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Share Stream</DialogTitle>
-                  <DialogDescription>Share this link with others to let them join your stream</DialogDescription>
+                  <DialogDescription>
+                    Share this link with others to let them join your stream
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="flex gap-2">
-                  <Input readOnly value={shareUrl} onClick={(e) => e.currentTarget.select()} />
+                  <Input
+                    readOnly
+                    value={shareUrl}
+                    onClick={(e) => e.currentTarget.select()}
+                  />
                   <Button>Copy</Button>
                 </div>
               </DialogContent>
@@ -143,15 +157,24 @@ export function CreatorDashboard() {
           </div>
           {currentSong ? (
             <>
-              <YouTubeEmbed youtubeId={currentSong.youtubeId} onEnded={() => {}} />
+              <YouTubeEmbed
+                youtubeId={currentSong.youtubeId}
+                onEnded={() => {}}
+              />
               <div className="mt-4">
-                <h3 className="font-medium text-gray-800 dark:text-white">{currentSong.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{currentSong.artist}</p>
+                <h3 className="font-medium text-gray-800 dark:text-white">
+                  {currentSong.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {currentSong.artist}
+                </p>
               </div>
             </>
           ) : (
             <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400">No song currently playing</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                No song currently playing
+              </p>
             </div>
           )}
           <Button className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
@@ -168,6 +191,5 @@ export function CreatorDashboard() {
         <SongQueue songs={songs} onUpvote={() => {}} onDownvote={() => {}} />
       </div>
     </div>
-  )
+  );
 }
-
