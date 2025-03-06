@@ -4,11 +4,17 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Music } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { redirect, useRouter } from 'next/navigation'
 
 export function SiteHeader() {
   const session = useSession();
+  const router = useRouter();
+  const handleLogout = async () => {
+    await signOut({ redirect: false }); // Prevent default redirect
+    router.push("/"); // Redirect to home page
+  };
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
@@ -45,7 +51,7 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-50"
-              onClick={() => signOut()}
+              onClick={handleLogout}
             >
               Log Out
             </Button>
