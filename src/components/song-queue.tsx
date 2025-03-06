@@ -18,7 +18,7 @@ interface SongQueueProps {
 
 export function SongQueue({ songs, onUpvote, onDownvote }: SongQueueProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 h-full">
+    <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 ">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-800 dark:text-white">
           <span className="text-purple-600 dark:text-purple-400">♪</span>
@@ -28,9 +28,9 @@ export function SongQueue({ songs, onUpvote, onDownvote }: SongQueueProps) {
       {songs.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400">No songs in queue</p>
       ) : (
-        <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-16rem)] lg:max-h-[calc(100vh-10rem)]">
+        <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-16rem)] lg:max-h-[calc(100vh-10.5rem)]">
           {songs.map((song) => (
-            <li key={song.id} className="flex items-center gap-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+            <li key={song.id} className="flex items-center gap-4 bg-neutral-100 dark:bg-gray-700 p-3 rounded-lg  hover:bg-neutral-200 dark:hover:bg-gray-900">
               <div className="relative w-16 h-16 flex-shrink-0">
                 <Image src={song.thumbnail || "/placeholder.svg"} alt="" fill className="object-cover rounded" />
               </div>
