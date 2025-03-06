@@ -20,7 +20,7 @@ export function AddStreamForm({ onAddSong }: AddStreamFormProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
         <Plus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
         Add Stream
