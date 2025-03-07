@@ -11,9 +11,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const user = session.user;
+    console.log(user.id)
+    const id = String(user.id);
     const streams = await prisma.stream.findMany({
+      
       where: {
-        userId: user.id,
+        userId: id,
       },
       include:{
         _count:{
@@ -29,8 +32,12 @@ export async function GET(req: NextRequest) {
       },
       
     });
+    console.log(streams)
     return NextResponse.json({
-      streams:streams.map(({_count,...rest}) => ({...rest,upvotes:_count.upvotes}))
+      streams:streams.map(({_count,...rest}) => ({
+        ...rest,upvotes:_count.upvotes,
+        haveUpvoted:rest.upvotes.length ? true :false
+      }))
     });
   } catch (error) {
     console.error("Error fetching streams:", error);
