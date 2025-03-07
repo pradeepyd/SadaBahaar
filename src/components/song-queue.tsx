@@ -1,17 +1,18 @@
 import Image from "next/image"
 import { ThumbsUp, ThumbsDown } from "lucide-react"
 
-interface Song {
-  id: string
-  title: string
-  artist: string
-  upvotes: number
-  downvotes: number
-  thumbnail?: string
+interface video {
+  id: string;
+  title: string;
+  youtubeId: string;
+  upvotes: number;
+  downvotes: number;
+  thumbnail?: string;
+  haveUpvoted:boolean;
 }
 
 interface SongQueueProps {
-  songs: Song[]
+  songs: video[] 
   onUpvote: (id: string) => void
   onDownvote: (id: string) => void
 }
@@ -28,15 +29,15 @@ export function SongQueue({ songs, onUpvote, onDownvote }: SongQueueProps) {
       {songs.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400">No songs in queue</p>
       ) : (
-        <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-16rem)] lg:max-h-[calc(100vh-10.5rem)]">
-          {songs.map((song) => (
+        <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-16rem)] lg:max-h-[calc(100vh-14rem)]">
+          {songs.map((song:any) => (
             <li key={song.id} className="flex items-center gap-4 bg-neutral-100 dark:bg-gray-700 p-3 rounded-lg  hover:bg-neutral-200 dark:hover:bg-gray-900">
               <div className="relative w-16 h-16 flex-shrink-0">
                 <Image src={song.thumbnail || "/placeholder.svg"} alt="" fill className="object-cover rounded" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium truncate text-gray-800 dark:text-white">{song.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{song.artist}</p>
+                {/* <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{song.artist}</p> */}
                 <div className="flex items-center gap-4 mt-1">
                   <button
                     onClick={() => onUpvote(song.id)}
