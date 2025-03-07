@@ -18,95 +18,97 @@ import { Input } from "@/components/ui/input";
 import { ExpandableCardDemo } from "./ui/expandable-card";
 import axios from "axios";
 
-interface Song {
+interface video {
   id: string;
   title: string;
-  artist: string;
   youtubeId: string;
   upvotes: number;
   downvotes: number;
   thumbnail?: string;
+  haveUpvoted:boolean;
 }
 
-const initialSongs: Song[] = [
-  {
-    id: "1",
-    title: "Lofi Hip Hop - Beats to Relax/Study to",
-    artist: "Lofi Girl",
-    youtubeId: "5qap5aO4i9A",
-    upvotes: 15,
-    downvotes: 2,
-    thumbnail: "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg",
-  },
-  {
-    id: "2",
-    title: "Chill Mix - Lo-fi Beats",
-    artist: "ChilledCow",
-    youtubeId: "DWcJFNfaw9c",
-    upvotes: 8,
-    downvotes: 1,
-    thumbnail: "https://i.ytimg.com/vi/DWcJFNfaw9c/hqdefault.jpg",
-  },
-  {
-    id: "3",
-    title: "Jazz Vibes for Work & Study",
-    artist: "Cafe Music BGM",
-    youtubeId: "Dx5qFachd3A",
-    upvotes: 5,
-    downvotes: 0,
-    thumbnail: "https://i.ytimg.com/vi/Dx5qFachd3A/hqdefault.jpg",
-  },
-  {
-    id: "4",
-    title: "Deep Focus Music",
-    artist: "Concentration Music",
-    youtubeId: "tfBVp0Zi2iE",
-    upvotes: 12,
-    downvotes: 3,
-    thumbnail: "https://i.ytimg.com/vi/tfBVp0Zi2iE/hqdefault.jpg",
-  },
-  {
-    id: "5",
-    title: "Ambient Study Music",
-    artist: "Relaxing Soundscapes",
-    youtubeId: "sjkrrmBnpGE",
-    upvotes: 7,
-    downvotes: 1,
-    thumbnail: "https://i.ytimg.com/vi/sjkrrmBnpGE/hqdefault.jpg",
-  },
-  {
-    id: "6",
-    title: "Peaceful Piano & Soft Rain Sounds",
-    artist: "Relaxing Music",
-    youtubeId: "XYuLIoWWsIc",
-    upvotes: 20,
-    downvotes: 2,
-    thumbnail: "https://i.ytimg.com/vi/XYuLIoWWsIc/hqdefault.jpg",
-  },
-  {
-    id: "7",
-    title: "Acoustic Guitar Instrumentals",
-    artist: "Acoustic Tunes",
-    youtubeId: "bpA_5a0miWk",
-    upvotes: 9,
-    downvotes: 1,
-    thumbnail: "https://i.ytimg.com/vi/bpA_5a0miWk/hqdefault.jpg",
-  },
-];
+// const initialSongs: Song[] = [
+//   {
+//     id: "1",
+//     title: "Lofi Hip Hop - Beats to Relax/Study to",
+//     artist: "Lofi Girl",
+//     youtubeId: "5qap5aO4i9A",
+//     upvotes: 15,
+//     downvotes: 2,
+//     thumbnail: "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg",
+//   },
+//   {
+//     id: "2",
+//     title: "Chill Mix - Lo-fi Beats",
+//     artist: "ChilledCow",
+//     youtubeId: "DWcJFNfaw9c",
+//     upvotes: 8,
+//     downvotes: 1,
+//     thumbnail: "https://i.ytimg.com/vi/DWcJFNfaw9c/hqdefault.jpg",
+//   },
+//   {
+//     id: "3",
+//     title: "Jazz Vibes for Work & Study",
+//     artist: "Cafe Music BGM",
+//     youtubeId: "Dx5qFachd3A",
+//     upvotes: 5,
+//     downvotes: 0,
+//     thumbnail: "https://i.ytimg.com/vi/Dx5qFachd3A/hqdefault.jpg",
+//   },
+//   {
+//     id: "4",
+//     title: "Deep Focus Music",
+//     artist: "Concentration Music",
+//     youtubeId: "tfBVp0Zi2iE",
+//     upvotes: 12,
+//     downvotes: 3,
+//     thumbnail: "https://i.ytimg.com/vi/tfBVp0Zi2iE/hqdefault.jpg",
+//   },
+//   {
+//     id: "5",
+//     title: "Ambient Study Music",
+//     artist: "Relaxing Soundscapes",
+//     youtubeId: "sjkrrmBnpGE",
+//     upvotes: 7,
+//     downvotes: 1,
+//     thumbnail: "https://i.ytimg.com/vi/sjkrrmBnpGE/hqdefault.jpg",
+//   },
+//   {
+//     id: "6",
+//     title: "Peaceful Piano & Soft Rain Sounds",
+//     artist: "Relaxing Music",
+//     youtubeId: "XYuLIoWWsIc",
+//     upvotes: 20,
+//     downvotes: 2,
+//     thumbnail: "https://i.ytimg.com/vi/XYuLIoWWsIc/hqdefault.jpg",
+//   },
+//   {
+//     id: "7",
+//     title: "Acoustic Guitar Instrumentals",
+//     artist: "Acoustic Tunes",
+//     youtubeId: "bpA_5a0miWk",
+//     upvotes: 9,
+//     downvotes: 1,
+//     thumbnail: "https://i.ytimg.com/vi/bpA_5a0miWk/hqdefault.jpg",
+//   },
+// ];
 
-export function CreatorDashboard(id:string) {
+export function CreatorDashboard() {
   const REFRESH_TIME = 10 * 1000;
-  const [songs] = useState<Song[]>(initialSongs);
-  const [currentSong] = useState<Song | null>(songs[0]);
+  const [inputLink,setInputLink] = useState('');
+  const [queue,setQueue] = useState<video[]>([]);
+  const [currentSong, setCurrentSong] = useState<video | null>(null);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   async function refreshFunction() {
     try {
       const res = await fetch("/api/streams/myStreams",{
-        body:JSON.stringify({id})
-      });
-      console.log(res.json()); // Axios auto-parses JSON
+        credentials:"include"
+        })
+      const json = await res.json();
+      setQueue(json.streams)
     } catch (error: any) {
       console.error(
         "Error fetching streams:",
@@ -117,6 +119,36 @@ export function CreatorDashboard(id:string) {
   useEffect(() => {
     refreshFunction(); // Initial fetch
   }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newVideo:video = {
+      id: String(queue.length + 1),
+      title: `new song ${queue.length + 1}`,
+      upvotes: 0,
+      youtubeId: "",
+      downvotes: 0,
+      haveUpvoted: false
+    }
+    setQueue([...queue,newVideo])
+    setInputLink('')
+  }
+
+  const handleVote = (id:string,isUpvote:boolean) => {
+    setQueue(queue.map(video => video.id === id ? {
+      ...video,
+      upvotes:isUpvote ? video.upvotes + 1 :video.upvotes,
+    }
+  :video
+  ).sort((a,b) => (b.upvotes) - (a.upvotes)))
+
+  fetch("api/streams/upvotes",{
+    method:"POST",
+    body:JSON.stringify({
+      streamId : id
+    })
+  })
+  }
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-6 mr-2 ml-2">
@@ -165,9 +197,9 @@ export function CreatorDashboard(id:string) {
                 <h3 className="font-medium text-gray-800 dark:text-white">
                   {currentSong.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {currentSong.artist}
-                </p>
+                {/* <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {currentSong}
+                </p> */}
               </div>
             </>
           ) : (
@@ -188,7 +220,7 @@ export function CreatorDashboard(id:string) {
       </div>
       {/* <ExpandableCardDemo/> */}
       <div className="">
-        <SongQueue songs={songs} onUpvote={() => {}} onDownvote={() => {}} />
+        <SongQueue songs={queue} onUpvote={() => {handleVote}} onDownvote={() => {}} />
       </div>
     </div>
   );
