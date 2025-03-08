@@ -1,6 +1,7 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { Account, NextAuthOptions, User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "./db";
+import { AdapterUser } from "next-auth/adapters";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,26 +12,34 @@ export const authOptions: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account }) {
-      if (!user.email) {
+    async signIn(params: {
+      user: User | AdapterUser;
+    account: Account | null;
+    }) {
+      if (!params.user.email) {
         return false;
       }
       try {
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
+          where: { email: params.user.email },
         });
 
         if (!existingUser) {
-          const providerEnum = account.provider === "google" ? "Google" : null;
+          if (!params.account || !params.account.provider) {
+            console.log("Account provider is missing");
+            return false;
+          }
+          const providerEnum =
+            params.account.provider === "google" ? "Google" : null;
 
           if (!providerEnum) {
-            console.log("Invalid provider:", account.provider);
+            console.log("Invalid provider:", params.account.provider);
             return false;
           }
 
           await prisma.user.create({
             data: {
-              email: user.email,
+              email: params.user.email,
               role: "User", // Ensure it's a valid enum value
               provider: providerEnum as "Google", // Explicitly cast to Provider enum
             },
@@ -43,7 +52,7 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ user, token }) {
+    async jwt({ user, token }: any) {
       if (user) {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
@@ -57,7 +66,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user && token.id) {
         session.user.id = String(token.id); // Ensure ID is always a string
       }
