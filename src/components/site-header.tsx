@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Music } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { redirect, useRouter } from 'next/navigation'
+import { useAuth, useClerk } from "@clerk/nextjs";
 
 export function SiteHeader() {
-  const session = useSession();
+  const {userId} = useAuth();
+  const {signOut} = useClerk();
   const router = useRouter();
   const handleLogout = async () => {
-    await signOut({ redirect: false }); // Prevent default redirect
-    router.push("/"); // Redirect to home page
+   await signOut({ redirectUrl: "/" }); // Prevent default redirect
+    // router.push("/"); // Redirect to home page
   };
   return (
     <header className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,7 +49,7 @@ export function SiteHeader() {
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <ThemeToggle />
 
-          {session.data?.user && (
+          {userId && (
             <Button
               variant="ghost"
               className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-50"
@@ -56,7 +58,7 @@ export function SiteHeader() {
               Log Out
             </Button>
           )}
-          {!session.data?.user && (
+          {!userId && (
             <Button
             onClick={() => signIn()}
               variant="ghost"

@@ -17,7 +17,7 @@ interface SongQueueProps {
   onDownvote: (id: string) => void
 }
 
-export function SongQueue({ songs, onUpvote, onDownvote }: SongQueueProps) {
+export function SongQueue({ songs=[], onUpvote, onDownvote }: SongQueueProps) {
   return (
     <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 ">
       <div className="flex items-center justify-between mb-4">

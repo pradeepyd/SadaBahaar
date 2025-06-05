@@ -1,22 +1,17 @@
-import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
-import { getServerSession } from "next-auth";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const  user = await currentUser();
 
-    if (!session?.user || !session.user.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const user = session.user;
-    console.log(user.id)
-    const id = String(user.id);
     const streams = await prisma.stream.findMany({
-      
       where: {
-        userId: id,
+        userId:user.id
       },
       include:{
         _count:{
@@ -32,7 +27,7 @@ export async function GET(req: NextRequest) {
       },
       
     });
-    console.log(streams)
+    // console.log(streams)
     return NextResponse.json({
       streams:streams.map(({_count,...rest}) => ({
         ...rest,upvotes:_count.upvotes,
