@@ -3,19 +3,12 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import {ClerkProvider} from '@clerk/nextjs'
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FanMix - Interactive Music Streaming Platform",
+  title: "Bazzao - Interactive Music Streaming Platform",
   description: "Let your fans choose what plays next in your music streams",
 };
 

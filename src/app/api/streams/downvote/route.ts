@@ -1,6 +1,6 @@
 
 import prisma from "@/lib/db";
-import { auth, currentUser} from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -9,8 +9,9 @@ const UpvoteSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const user = await currentUser();
-  if (!user?.id) {
+  const  user  = auth();
+  const userId = (await user).userId 
+  if (!userId) {
     return NextResponse.json(
       {
         error: "Unauthorized",
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     await prisma.upvote.delete({
       where: {
         userId_streamId: {
-          userId:user.id,
+          userId,
           streamId: data.streamId,
         },
       },
