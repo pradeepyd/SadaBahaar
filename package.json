@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.31.9",
     "@clerk/nextjs": "^6.21.0",
     "@heroui/button": "^2.2.20",
     "@heroui/input": "^2.4.20",
@@ -38,6 +39,7 @@
     "react-hook-form": "^7.57.0",
     "react-icons": "^5.5.0",
     "react-youtube": "^10.1.0",
+    "sonner": "^2.0.5",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.2"
