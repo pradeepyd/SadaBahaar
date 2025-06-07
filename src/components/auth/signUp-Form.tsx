@@ -7,16 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
-import {
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@heroui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { CardWrapper } from "../CardWrapper";
+import { OauthProvider } from "./oauth";
+import { FormError } from "./formError";
+import { FormSuccess } from "./formSuccess";
 
 export const SignUpForm = () => {
   const router = useRouter();
@@ -30,6 +28,30 @@ export const SignUpForm = () => {
   const { signUp, isLoaded, setActive } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
+  const [sendEmail, setSendEmail] = useState<
+    "idle" | "sending" | "sent" | "error"
+  >("idle");
+
+  const oauthSignIn = async (provider: "oauth_google" | "oauth_github") => {
+    try {
+      provider === "oauth_google"
+        ? setIsGoogleLoading(true)
+        : setIsGithubLoading(true);
+
+      await signUp?.authenticateWithRedirect({
+        strategy: provider,
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/dashboard",
+      });
+    } catch (error) {
+      setAuthError("OAuth authentication failed");
+    } finally {
+      setIsGoogleLoading(false);
+      setIsGithubLoading(false);
+    }
+  };
 
   const {
     register,
@@ -58,7 +80,6 @@ export const SignUpForm = () => {
       });
       setVerifying(true);
     } catch (error: any) {
-    //   console.error("Signup error:", error);
       setAuthError(
         error.errors?.[0]?.message ||
           "An error occured during the signup. Please try again!"
@@ -87,17 +108,31 @@ export const SignUpForm = () => {
         });
         router.push("/dashboard");
       } else {
-        // console.error("verification incomplete");
         setVerificationError("Verification could not be complete");
       }
     } catch (error: any) {
-    //   console.error("verification incomplete");
       setVerificationError(
         error.errors?.[0]?.message ||
           "An error occured during the signup. Please try again!"
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setSendEmail("sending");
+    try {
+      if (signUp) {
+        await signUp?.prepareEmailAddressVerification({
+          strategy: "email_code",
+        });
+        setSendEmail("sent");
+        setTimeout(() => setSendEmail("idle"), 2000);
+      }
+    } catch (error) {
+      setSendEmail("error");
+      setTimeout(() => setSendEmail("idle"), 2000);
     }
   };
   if (verifying) {
@@ -108,20 +143,20 @@ export const SignUpForm = () => {
         footerDescription="Didn't receive a code?"
         backButtonHref=""
         backButtonLabel="Resend code"
-        onClick={async () => {
-          if (signUp) {
-            await signUp?.prepareEmailAddressVerification({
-              strategy: "email_code",
-            });
-          }
-        }}
+        backButtonDisabled={sendEmail === "sending"} 
+        onClick={handleResend}
       >
-        {verificationError && (
-          <div className="bg-danger-50 text-danger-700 p-4 rounded-lg mb-6 flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 flex-shrink-0" />
-            <p>{verificationError}</p>
-          </div>
+        {sendEmail === "sending" ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending email...
+          </>
+        ) : (
+          sendEmail === "sent" && <FormSuccess message="Email has been sent" />
         )}
+
+        {verificationError && <FormError message={verificationError} />}
+
         <form onSubmit={handleVerificationSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label
@@ -134,14 +169,14 @@ export const SignUpForm = () => {
               id="verificationCode"
               placeholder="Enter verification code"
               className="text-center text-lg tracking-widest bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 py-3"
-              value={verificationCode}
+              value={verificationCode ?? ""}
               onChange={(e) => setVerificationCode(e.target.value)}
             />
           </div>
 
           <Button
             type="submit"
-            className="w-fullbg-purple-600 hover:bg-purple-700 text-white py-3 text-base font-medium rounded-md"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-base font-medium rounded-md"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -165,15 +200,18 @@ export const SignUpForm = () => {
       backButtonHref="/sign-in"
       backButtonLabel="Sign in"
     >
-      {authError && (
-        <div className="bg-danger-50 text-danger-700 p-4 rounded-lg mb-6 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
-          <p>{authError}</p>
-        </div>
-      )}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {authError && <FormError message={authError} />}
+
+      <OauthProvider
+        onGithubClick={() => oauthSignIn("oauth_github")}
+        onGoogleClick={() => oauthSignIn("oauth_google")}
+        isGithubLoading={isGithubLoading}
+        isGoogleLoading={isGoogleLoading}
+      ></OauthProvider>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email Field */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Label htmlFor="email" className="text-gray-200 text-sm font-medium">
             Email
           </Label>
@@ -191,7 +229,6 @@ export const SignUpForm = () => {
             })}
           />
         </div>
-
         {/* Password Field */}
         <div className="space-y-4">
           <Label
@@ -251,7 +288,6 @@ export const SignUpForm = () => {
               className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 py-3 pr-12"
               {...register("confirmPassword", {
                 required: "Please confirm your password",
-                //   validate: (value) => value === `${password}` || "Passwords do not match",
               })}
             />
             <Button
@@ -268,13 +304,14 @@ export const SignUpForm = () => {
               )}
             </Button>
           </div>
-          {errors.confirmPassword && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.confirmPassword.message}
-            </p>
-          )}
+         
         </div>
-
+        <div
+          id="clerk-captcha"
+          data-cl-theme="dark"
+          data-cl-size="normal"
+          className="my-4"
+        />
         <div className="mt-4 pt-3">
           <Button
             type="submit"
