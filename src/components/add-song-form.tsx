@@ -1,47 +1,72 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+export function AddSongForm({ creatorId }: { creatorId: string }) {
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-interface AddSongFormProps {
-  onAddSong: (youtubeId: string, title: string) => void
-}
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+     if (!creatorId) {
+    setError("Creator ID is missing");
+    return;
+  }
+  if (!youtubeUrl) {
+    setError("Please enter a URL");
+    return;
+  }
+    setLoading(true);
+    setError("");
 
-export function AddSongForm({ onAddSong }: AddSongFormProps) {
-  const [youtubeUrl, setYoutubeUrl] = useState("")
-  const [title, setTitle] = useState("")
+    try {
+      const res = await fetch("/api/streams", {
+        method: "POST",
+        body: JSON.stringify({
+          creatorId,
+          url: youtubeUrl,
+        }),
+      });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const youtubeId = extractYoutubeId(youtubeUrl)
-    if (youtubeId && title) {
-      onAddSong(youtubeId, title)
-      setYoutubeUrl("")
-      setTitle("")
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to add stream");
+
+      setYoutubeUrl("");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
-  }
-
-  const extractYoutubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
-    return match && match[2].length === 11 ? match[2] : null
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2 mt-4">
+     <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+        <Plus className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        Add Stream
+      </h2>
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <div className="flex gap-2">
       <Input
         type="text"
-        placeholder="YouTube URL"
+        placeholder="YouTube or Spotify URL"
         value={youtubeUrl}
         onChange={(e) => setYoutubeUrl(e.target.value)}
         required
       />
-      <Input type="text" placeholder="Song Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-      <Button type="submit">Add Song</Button>
+      <Button type="submit" disabled={loading}>
+        {loading ? "Adding..." : "Add Song"}
+      </Button>
+      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+       <p className="text-sm text-gray-600 dark:text-gray-400">
+          Paste a YouTube video URL to add to your stream queue
+        </p>
     </form>
-  )
+    </div>
+  );
 }
-
