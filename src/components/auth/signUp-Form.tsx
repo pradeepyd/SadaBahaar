@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
-import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@heroui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -45,7 +45,7 @@ export const SignUpForm = () => {
         redirectUrl: "/sso-callback",
         redirectUrlComplete: "/dashboard",
       });
-    } catch (error) {
+    } catch {
       setAuthError("OAuth authentication failed");
     } finally {
       setIsGoogleLoading(false);

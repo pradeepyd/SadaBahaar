@@ -1,16 +1,17 @@
 // import { MusicStreamList } from "@/components/music-stream-list"
 // import { SiteHeader } from "@/components/site-header"
-// import { Sidebar } from "@/components/sidebar"
+import { Sidebar } from "@/components/sidebar"
 // import { AddStreamButton } from "@/components/add-stream-button"
-// import { FooterSection } from "@/components/FooterSection"
+import { FooterSection } from "@/components/FooterSection"
 // import { ExpandableCardDemo } from "@/components/ui/expandable-card"
-// import { CreatorDashboard } from "@/components/Dashboard"
+import { CreatorDashboard } from "@/components/Dashboard"
 
-export default function Home() {
+import { NavBar } from "@/components/navBar";
+
+export default function Dashboard() {
   return (
     <div>
-      hekp
-      {/* <SiteHeader />
+       <NavBar />
     <div className="flex flex-col min-h-screen bg-background mt-10">
       <div className="flex min-h-screen bg-background text-foreground">
         <Sidebar className="w-64 hidden lg:block" />
@@ -22,7 +23,7 @@ export default function Home() {
         </main>
       </div>
       <FooterSection />
-    </div> */}
+    </div> 
     </div>
   )
 }

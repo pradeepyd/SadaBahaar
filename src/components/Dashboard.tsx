@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Music, Share2, SkipForward } from "lucide-react";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 import { SongQueue } from "@/components/song-queue";
-import { AddStreamForm } from "@/components/add-stream-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,8 +14,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ExpandableCardDemo } from "./ui/expandable-card";
 import axios from "axios";
+import { AddSongForm } from "./add-song-form";
+import { useUser } from "@clerk/nextjs";
 
 interface video {
   id: string;
@@ -95,6 +95,7 @@ interface video {
 // ];
 
 export function CreatorDashboard() {
+  const {user} = useUser();
   const REFRESH_TIME = 10 * 1000;
   const [inputLink,setInputLink] = useState('');
   const [queue,setQueue] = useState<video[]>([]);
@@ -102,58 +103,61 @@ export function CreatorDashboard() {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
-  async function refreshFunction() {
-    try {
-      const res = await fetch("/api/streams/myStreams",{
-        credentials:"include"
-        })
-      const json = await res.json();
-      setQueue(json.streams)
-    } catch (error: any) {
-      console.error(
-        "Error fetching streams:",
-        error.response?.data || error.message
-      );
-    }
-  }
-  useEffect(() => {
-    refreshFunction(); // Initial fetch
-  }, []);
+  // async function refreshFunction() {
+  //   try {
+  //     const res = await fetch("/api/streams/myStreams",{
+  //       credentials:"include"
+  //       })
+  //     const json = await res.json();
+  //     setQueue(json.streams)
+  //   } catch (error: any) {
+  //     console.error(
+  //       "Error fetching streams:",
+  //       error.response?.data || error.message
+  //     );
+  //   }
+  // }
+  // useEffect(() => {
+  //   refreshFunction(); // Initial fetch
+  // }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newVideo:video = {
-      id: String(queue.length + 1),
-      title: `new song ${queue.length + 1}`,
-      upvotes: 0,
-      youtubeId: "",
-      downvotes: 0,
-      haveUpvoted: false
-    }
-    setQueue([...queue,newVideo])
-    setInputLink('')
-  }
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   const newVideo:video = {
+  //     id: String(queue.length + 1),
+  //     title: `new song ${queue.length + 1}`,
+  //     upvotes: 0,
+  //     youtubeId: "",
+  //     downvotes: 0,
+  //     haveUpvoted: false
+  //   }
+  //   setQueue([...queue,newVideo])
+  //   setInputLink('')
+  // }
 
-  const handleVote = (id:string,isUpvote:boolean) => {
-    setQueue(queue.map(video => video.id === id ? {
-      ...video,
-      upvotes:isUpvote ? video.upvotes + 1 :video.upvotes,
-    }
-  :video
-  ).sort((a,b) => (b.upvotes) - (a.upvotes)))
+  // const handleVote = (id:string,isUpvote:boolean) => {
+  //   setQueue(queue.map(video => video.id === id ? {
+  //     ...video,
+  //     upvotes:isUpvote ? video.upvotes + 1 :video.upvotes,
+  //   }
+  // :video
+  // ).sort((a,b) => (b.upvotes) - (a.upvotes)))
 
-  fetch("api/streams/upvotes",{
-    method:"POST",
-    body:JSON.stringify({
-      streamId : id
-    })
-  })
-  }
+  // fetch("api/streams/upvotes",{
+  //   method:"POST",
+  //   body:JSON.stringify({
+  //     streamId : id
+  //   })
+  // })
+  // }
+  if (!user) {
+  return <div>Not logged in</div>;
+}
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-6 mr-2 ml-2">
       <div className="space-y-6 overflow-y-auto">
-        <AddStreamForm onAddSong={() => {}} />
+        <AddSongForm creatorId={user.id} />
         <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -220,7 +224,7 @@ export function CreatorDashboard() {
       </div>
       {/* <ExpandableCardDemo/> */}
       <div className="">
-        <SongQueue songs={queue} onUpvote={() => {handleVote}} onDownvote={() => {}} />
+        {/* <SongQueue songs={queue} onUpvote={() => {handleVote}} onDownvote={() => {}} /> */}
       </div>
     </div>
   );

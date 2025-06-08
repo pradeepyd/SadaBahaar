@@ -1,6 +1,6 @@
-import type React from "react"
 
-import { SiteHeader } from "@/components/navBar"
+
+import { NavBar } from "@/components/navBar"
 import Hero from "@/components/Herosection"
 import FeatureSection from "@/components/FeatureSection"
 import HowItWorks from "@/components/Howitworks"
@@ -10,7 +10,7 @@ import { FooterSection } from "@/components/FooterSection"
 export default function Home() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SiteHeader />
+      <NavBar />
       <main className="flex-grow">
         <Hero/>
         <FeatureSection/>

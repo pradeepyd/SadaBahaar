@@ -42,3 +42,37 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = await currentUser();
+
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { url, title, thumbnail, extractedId, type } = body;
+
+    if (!url || !title || !extractedId || !type) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const newStream = await prisma.stream.create({
+      data: {
+        userId: user.id,
+        url,
+        title,
+        extractedId,
+        thumbnail,
+        type,
+      },
+    });
+
+    return NextResponse.json({ stream: newStream }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating stream:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

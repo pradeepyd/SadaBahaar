@@ -15,6 +15,8 @@ import { CardWrapper } from "../CardWrapper";
 import { OauthProvider } from "./oauth";
 import { FormError } from "./formError";
 import { toast } from "sonner";
+import ForgotPasswordComponent from "./forgot-password";
+import Link from "next/link";
 
 export const SignInForm = () => {
   const router = useRouter();
@@ -24,24 +26,14 @@ export const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGithubLoading, setIsGithubLoading] = useState(false);
-    const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [password,setPassword] = useState("");
+  const [password, setPassword] = useState("");
   const { redirectToSignIn } = useClerk();
-  const handleForgotPassword = async() => {
-     if (!isLoaded) return;
+  const [error, setError] = useState("");
 
-    try {
-      await signIn.create({
-        strategy: 'reset_password_email_code',
-        identifier:email,
-      });
-
-      toast.success('Reset password email sent!');
-      setSent(true);
-    } catch (err: any) {
-      toast.error(err.errors?.[0]?.message || 'Something went wrong');
-    }
+  function handleForgotPassword() {
+    router.push("/forgot-password");
   }
   const oauthSignIn = async (provider: "oauth_google" | "oauth_github") => {
     try {
@@ -128,15 +120,14 @@ export const SignInForm = () => {
             placeholder="Enter your email"
             className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 py-3 rounded-md"
             {...register("identifier", {
-              required: "Email is required",
+              // required: "Email is required",
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                 message: "Invalid email address",
               },
             })}
           />
-          <FormError message={authError}/>
-         
+          <FormError message={authError} />
         </div>
 
         {/* Password Field */}
@@ -148,9 +139,12 @@ export const SignInForm = () => {
             >
               Password
             </Label>
-            <button onClick={handleForgotPassword} className="p-0 h-auto text-xs font-normal text-purple-400 hover:text-purple-300 underline-offset-4">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-normal text-purple-400 hover:text-purple-300 underline-offset-4"
+            >
               Forgot password?
-            </button>
+            </Link>
           </div>
           <div className="relative">
             <Input
@@ -159,7 +153,7 @@ export const SignInForm = () => {
               placeholder="Enter your password"
               className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 py-3 pr-12 rounded-md"
               {...register("password", {
-                required: "Password is required",
+                // required: "Password is required",
                 minLength: {
                   value: 6,
                   message: "Password must be at least 6 characters",
@@ -180,7 +174,7 @@ export const SignInForm = () => {
               )}
             </Button>
           </div>
-          <FormError message={errors.password?.message}/>
+          <FormError message={errors.password?.message} />
         </div>
 
         <Button

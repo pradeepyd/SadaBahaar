@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 //@ts-ignore
 import { google } from 'googleapis';
 import axios from 'axios'
-import { string, z } from "zod";
+import * as z from "zod";
+import { error } from "console";
+import { auth } from "@clerk/nextjs/server";
 
 const YT_REGEX = new RegExp(
   "^https?:\\/\\/(www\\.)?youtube\\.com\\/watch\\?v=[\\w-]+(&.*)?$"
@@ -37,7 +39,7 @@ async function getVideoDetails(extractedId: string){
         if (response.data.items && response.data.items.length > 0) {
           const video = response.data.items[0].snippet;
           const title = video.title;
-          const thumbnail = video.thumbnails.high.url;  // Get the highest quality thumbnail
+          const thumbnail = video.thumbnails?.high?.url || video.thumbnails?.default?.url || ""; // Get the highest quality thumbnail
           return { title, thumbnail };
         } else {
           console.error("Video not found");
@@ -51,7 +53,16 @@ async function getVideoDetails(extractedId: string){
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    console.log(userId);
+    // const userId = (await user).userId // 👈 This gets the logged-in user's ID from Clerk
+  if (!userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
     const data = CreateStreamSchema.parse(await req.json());
+ 
+
+    console.log("error in starting")
     const urlObj = new URL(data.url);
     const extractedId = urlObj.searchParams.get("v");
     if (!extractedId) {
@@ -64,12 +75,13 @@ export async function POST(req: NextRequest) {
         }
       );
     }
-const { title, thumbnail }:any = await getVideoDetails(extractedId);
+    const { title, thumbnail }:any = await getVideoDetails(extractedId);
 
-      
+      console.log("error in before creating");
+      // console.log(data.creatorId); 
     await prisma.stream.create({
       data: {
-        userId: data.creatorId,
+        userId:data.creatorId,
         url: data.url,
         extractedId,
         type: "Youtube",
@@ -77,13 +89,14 @@ const { title, thumbnail }:any = await getVideoDetails(extractedId);
         thumbnail
       },
     });
+    console.log("error in after creating");
 
     return NextResponse.json(
-      { message: "Stream added successfully" },
+      { message:"success" },
       { status: 200 }
     );
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error(error);
     return NextResponse.json(
       {
         message: "Error while adding streams",
