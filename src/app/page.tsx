@@ -1,11 +1,10 @@
-
-
 import { NavBar } from "@/components/navBar"
 import Hero from "@/components/Herosection"
 import FeatureSection from "@/components/FeatureSection"
 import HowItWorks from "@/components/Howitworks"
 import { CTAsection } from "@/components/CTAsection"
 import { FooterSection } from "@/components/FooterSection"
+import { CreateRoomButton } from '@/components/CreateRoomButton'
 
 export default function Home() {
   return (

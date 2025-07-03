@@ -20,6 +20,21 @@ model User {
   provider    Provider
   streams     Stream[]
   upvotes     Upvote[]
+  downvotes   Downvote[]
+  roomsCreated Room[] @relation("UserRoomsCreated")
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  streams   Stream[] @relation("RoomStreams")
+  // Playback sync fields
+  currentSongId String? 
+  currentSong   Stream? @relation("CurrentSong", fields: [currentSongId], references: [id])
+  currentSongStartedAt DateTime?
+  creatorId String
+  creator   User @relation("UserRoomsCreated", fields: [creatorId], references: [id])
 }
 
 model Stream {
@@ -30,12 +45,28 @@ model Stream {
    thumbnail     String  @default("") 
    extractedId   String
    active        Boolean  @default(true)
+   lastPlayedAt  DateTime?
+   createdAt     DateTime @default(now())
    upvotes       Upvote[]
+   downvotes     Downvote[]
+   roomId        String
+   room          Room @relation("RoomStreams", fields: [roomId], references: [id])
    userId        String
-   user          User @relation(fields: [userId],references: [id])
+   user          User @relation(fields: [userId], references: [id])
+   // For currentSong reverse relation
+   currentSongOf Room[] @relation("CurrentSong")
 }
 
 model Upvote {
+    id              String @id  @default(uuid())
+    userId          String
+    streamId        String 
+    stream          Stream  @relation(fields: [streamId],references: [id])
+    user            User  @relation(fields: [userId],references: [id])
+    @@unique([userId,streamId])
+}
+
+model Downvote {
     id              String @id  @default(uuid())
     userId          String
     streamId        String 

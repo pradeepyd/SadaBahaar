@@ -4,22 +4,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
-export function AddSongForm({ creatorId }: { creatorId: string }) {
+export function AddSongForm({ onSongAdded, roomId }: { onSongAdded?: () => void; roomId: string }) {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-     if (!creatorId) {
-    setError("Creator ID is missing");
-    return;
-  }
-  if (!youtubeUrl) {
-    setError("Please enter a URL");
-    return;
-  }
+    if (!youtubeUrl) {
+      setError("Please enter a URL");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -27,8 +24,8 @@ export function AddSongForm({ creatorId }: { creatorId: string }) {
       const res = await fetch("/api/streams", {
         method: "POST",
         body: JSON.stringify({
-          creatorId,
           url: youtubeUrl,
+          roomId,
         }),
       });
 
@@ -36,8 +33,15 @@ export function AddSongForm({ creatorId }: { creatorId: string }) {
       if (!res.ok) throw new Error(data.message || "Failed to add stream");
 
       setYoutubeUrl("");
+      toast.success("Song added successfully!");
+      
+      // Refresh the queue
+      if (onSongAdded) {
+        onSongAdded();
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong");
+      toast.error(err.message || "Failed to add song");
     } finally {
       setLoading(false);
     }

@@ -1,23 +1,73 @@
 import Image from "next/image"
 import { ThumbsUp, ThumbsDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { differenceInSeconds, addMinutes } from 'date-fns';
 
-interface video {
+interface Stream {
   id: string;
   title: string;
-  youtubeId: string;
+  extractedId: string;
   upvotes: number;
   downvotes: number;
   thumbnail?: string;
-  haveUpvoted:boolean;
+  haveUpvoted: boolean;
+  haveDownvoted: boolean;
+  url: string;
+  type: string;
+  lastPlayedAt?: string;
 }
 
 interface SongQueueProps {
-  songs: video[] 
+  songs: Stream[] 
   onUpvote: (id: string) => void
   onDownvote: (id: string) => void
+  currentSongId?: string
+  onSelectSong?: (song: Stream) => void
 }
 
-export function SongQueue({ songs=[], onUpvote, onDownvote }: SongQueueProps) {
+export function SongQueue({ songs = [], onUpvote, onDownvote, currentSongId, onSelectSong }: SongQueueProps) {
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [optimisticVotes, setOptimisticVotes] = useState<Record<string, { upvotes: number; downvotes: number; haveUpvoted: boolean; haveDownvoted: boolean }>>({});
+  const [now, setNow] = useState<Date>(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleUpvote = async (id: string) => {
+    const song = songs.find(s => s.id === id);
+    if (!song) return;
+    setLoadingId(id);
+    setOptimisticVotes(prev => ({
+      ...prev,
+      [id]: {
+        upvotes: song.haveUpvoted ? song.upvotes - 1 : song.upvotes + 1,
+        downvotes: song.haveDownvoted ? song.downvotes - 1 : song.downvotes,
+        haveUpvoted: !song.haveUpvoted,
+        haveDownvoted: false
+      }
+    }));
+    await onUpvote(id);
+    setLoadingId(null);
+  };
+  const handleDownvote = async (id: string) => {
+    const song = songs.find(s => s.id === id);
+    if (!song) return;
+    setLoadingId(id);
+    setOptimisticVotes(prev => ({
+      ...prev,
+      [id]: {
+        upvotes: song.haveUpvoted ? song.upvotes - 1 : song.upvotes,
+        downvotes: song.haveDownvoted ? song.downvotes - 1 : song.downvotes + 1,
+        haveUpvoted: false,
+        haveDownvoted: !song.haveDownvoted
+      }
+    }));
+    await onDownvote(id);
+    setLoadingId(null);
+  };
+
   return (
     <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 ">
       <div className="flex items-center justify-between mb-4">
@@ -30,33 +80,87 @@ export function SongQueue({ songs=[], onUpvote, onDownvote }: SongQueueProps) {
         <p className="text-gray-600 dark:text-gray-400">No songs in queue</p>
       ) : (
         <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-16rem)] lg:max-h-[calc(100vh-14rem)]">
-          {songs.map((song:any) => (
-            <li key={song.id} className="flex items-center gap-4 bg-neutral-100 dark:bg-gray-700 p-3 rounded-lg  hover:bg-neutral-200 dark:hover:bg-gray-900">
-              <div className="relative w-16 h-16 flex-shrink-0">
-                <Image src={song.thumbnail || "/placeholder.svg"} alt="" fill className="object-cover rounded" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium truncate text-gray-800 dark:text-white">{song.title}</h3>
-                {/* <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{song.artist}</p> */}
-                <div className="flex items-center gap-4 mt-1">
-                  <button
-                    onClick={() => onUpvote(song.id)}
-                    className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
-                  >
-                    <ThumbsUp className="h-4 w-4" />
-                    <span className="text-sm">{song.upvotes}</span>
-                  </button>
-                  <button
-                    onClick={() => onDownvote(song.id)}
-                    className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
-                  >
-                    <ThumbsDown className="h-4 w-4" />
-                    <span className="text-sm">{song.downvotes}</span>
-                  </button>
+          {songs.map((song: Stream) => {
+            const optimistic = optimisticVotes[song.id];
+            const upvotes = optimistic ? optimistic.upvotes : song.upvotes;
+            const downvotes = optimistic ? optimistic.downvotes : song.downvotes;
+            const haveUpvoted = optimistic ? optimistic.haveUpvoted : song.haveUpvoted;
+            const haveDownvoted = optimistic ? optimistic.haveDownvoted : song.haveDownvoted;
+            // Timer logic
+            let cooldown = 0;
+            let cooldownStr = "";
+            if (song.lastPlayedAt) {
+              const lastPlayed = new Date(song.lastPlayedAt);
+              const availableAt = addMinutes(lastPlayed, 5);
+              cooldown = Math.max(0, differenceInSeconds(availableAt, now));
+              if (cooldown > 0) {
+                const min = Math.floor(cooldown / 60);
+                const sec = cooldown % 60;
+                cooldownStr = `${min}:${sec.toString().padStart(2, '0')}`;
+              }
+            }
+            const isAvailable = cooldown === 0;
+            return (
+              <li
+                key={song.id}
+                className={`flex items-center gap-4 p-3 rounded-lg hover:bg-neutral-200 dark:hover:bg-gray-900 ${song.id === currentSongId ? 'border-2 border-purple-600 bg-purple-50 dark:bg-purple-900' : 'bg-neutral-100 dark:bg-gray-700'}`}
+                style={{ cursor: isAvailable ? 'pointer' : 'not-allowed', opacity: isAvailable ? 1 : 0.6 }}
+                onClick={() => isAvailable && onSelectSong?.(song)}
+              >
+                <div className="relative w-16 h-16 flex-shrink-0">
+                  <Image src={song.thumbnail || "/placeholder.svg"} alt="" fill className="object-cover rounded" />
                 </div>
-              </div>
-            </li>
-          ))}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium truncate text-gray-800 dark:text-white flex items-center gap-2">
+                    {song.title}
+                    {song.id === currentSongId && (
+                      <span className="ml-2 px-2 py-0.5 text-xs rounded bg-purple-600 text-white animate-pulse">Now Playing</span>
+                    )}
+                    {!isAvailable && (
+                      <span className="ml-2 px-2 py-0.5 text-xs rounded bg-gray-400 text-white">Available in {cooldownStr}</span>
+                    )}
+                  </h3>
+                  {/* <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{song.artist}</p> */}
+                  <div className="flex items-center gap-4 mt-1">
+                    <button
+                      onClick={e => { e.stopPropagation(); isAvailable && onUpvote(song.id); }}
+                      className={`flex items-center gap-1 ${
+                        haveUpvoted 
+                          ? "text-purple-600 dark:text-purple-400" 
+                          : "text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                      }`}
+                      disabled={loadingId === song.id}
+                    >
+                      <ThumbsUp className="h-4 w-4" />
+                      <span className="text-sm">{upvotes}</span>
+                      {loadingId === song.id && <span className="ml-1 animate-spin">⏳</span>}
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); isAvailable && onDownvote(song.id); }}
+                      className={`flex items-center gap-1 ${
+                        haveDownvoted 
+                          ? "text-red-600 dark:text-red-400" 
+                          : "text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                      }`}
+                      disabled={loadingId === song.id}
+                    >
+                      <ThumbsDown className="h-4 w-4" />
+                      <span className="text-sm">{downvotes}</span>
+                      {loadingId === song.id && <span className="ml-1 animate-spin">⏳</span>}
+                    </button>
+                    {isAvailable && (
+                      <button
+                        className="ml-2 px-2 py-0.5 text-xs rounded bg-green-600 text-white"
+                        onClick={e => { e.stopPropagation(); onSelectSong?.(song); }}
+                      >
+                        Play
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
