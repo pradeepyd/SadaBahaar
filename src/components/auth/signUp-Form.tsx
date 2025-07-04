@@ -1,10 +1,7 @@
 "use client";
 import { useSignUp } from "@clerk/nextjs";
 import { useState } from "react";
-import * as z from "zod";
-import { SignUpSchema } from "../../../schemas/signUpSchema";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -59,15 +56,14 @@ export const SignUpForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<typeof SignUpSchema>>({
-    resolver: zodResolver(SignUpSchema),
+  } = useForm({
     defaultValues: {
       email: "",
       password: "",
       confirmPassword: "",
     },
   });
-  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {
+  const onSubmit = async (data: { email: string; password: string; confirmPassword: string }) => {
     if (!isLoaded) return;
     setIsSubmitting(true);
     setAuthError(null);
