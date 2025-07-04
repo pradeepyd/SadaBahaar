@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Music, Share2, SkipForward, Play, Pause, Hourglass } from "lucide-react";
+import { Music, Share2, SkipForward, Play, Pause, Hourglass, Menu } from "lucide-react";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 import { SongQueue } from "@/components/song-queue";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,7 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
   const currentSongRef = useRef<Stream | null>(null);
   const [currentSongStartedAt, setCurrentSongStartedAt] = useState<string | null>(null);
   const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => { currentSongRef.current = currentSong; }, [currentSong]);
 
@@ -409,6 +410,14 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
     <div className="flex flex-col mt-4">
       {/* Prominent Share Room button at the top */}
       <div className="flex justify-end items-center mb-4 px-4">
+        {/* Hamburger menu for mobile */}
+        <button
+          className="md:hidden mr-auto p-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open sidebar menu"
+        >
+          <Menu className="h-6 w-6 text-gray-700 dark:text-gray-200" />
+        </button>
         <Button
           variant="outline"
           size="sm"
@@ -424,7 +433,32 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
       </div>
       {/* Main dashboard content */}
       <div className="flex">
-        <Sidebar onSelect={setTab} selectedTab={tab} />
+        {/* Sidebar for desktop */}
+        <div className="hidden md:block">
+          <Sidebar onSelect={setTab} selectedTab={tab} />
+        </div>
+        {/* Sidebar Drawer for mobile */}
+        {drawerOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            {/* Overlay */}
+            <div
+              className="fixed inset-0 bg-black/40"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close sidebar menu"
+            />
+            {/* Drawer */}
+            <div className="relative bg-card w-64 h-full shadow-lg animate-slide-in-left">
+              <button
+                className="absolute top-2 right-2 p-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close sidebar menu"
+              >
+                ✕
+              </button>
+              <Sidebar onSelect={(tab) => { setTab(tab); setDrawerOpen(false); }} selectedTab={tab} />
+            </div>
+          </div>
+        )}
         <div className="flex-1 ml-4">
           {tab === "queue" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-6 mr-2 ml-2">
