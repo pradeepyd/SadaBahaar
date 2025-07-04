@@ -23,7 +23,7 @@ export function CreateRoomButton() {
       } else {
         setError(data.error || 'Failed to create room');
       }
-    } catch (e) {
+    } catch {
       setError('Failed to create room');
     } finally {
       setLoading(false);

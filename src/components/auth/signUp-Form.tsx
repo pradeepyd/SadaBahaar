@@ -36,9 +36,11 @@ export const SignUpForm = () => {
 
   const oauthSignIn = async (provider: "oauth_google" | "oauth_github") => {
     try {
-      provider === "oauth_google"
-        ? setIsGoogleLoading(true)
-        : setIsGithubLoading(true);
+      if (provider === "oauth_google") {
+        setIsGoogleLoading(true);
+      } else {
+        setIsGithubLoading(true);
+      }
 
       await signUp?.authenticateWithRedirect({
         strategy: provider,
@@ -79,11 +81,15 @@ export const SignUpForm = () => {
         strategy: "email_code",
       });
       setVerifying(true);
-    } catch (error: any) {
-      setAuthError(
-        error.errors?.[0]?.message ||
-          "An error occured during the signup. Please try again!"
-      );
+          } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'errors' in error) {
+          setAuthError(
+            (error as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message ||
+              "An error occured during the signup. Please try again!"
+          );
+        } else {
+          setAuthError("An error occured during the signup. Please try again!");
+        }
     } finally {
       setIsSubmitting(false);
     }
@@ -110,11 +116,15 @@ export const SignUpForm = () => {
       } else {
         setVerificationError("Verification could not be complete");
       }
-    } catch (error: any) {
-      setVerificationError(
-        error.errors?.[0]?.message ||
-          "An error occured during the signup. Please try again!"
-      );
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'errors' in error) {
+        setVerificationError(
+          (error as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message ||
+            "An error occured during the signup. Please try again!"
+        );
+      } else {
+        setVerificationError("An error occured during the signup. Please try again!");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -130,7 +140,7 @@ export const SignUpForm = () => {
         setSendEmail("sent");
         setTimeout(() => setSendEmail("idle"), 2000);
       }
-    } catch (error) {
+    } catch {
       setSendEmail("error");
       setTimeout(() => setSendEmail("idle"), 2000);
     }
@@ -207,7 +217,7 @@ export const SignUpForm = () => {
         onGoogleClick={() => oauthSignIn("oauth_google")}
         isGithubLoading={isGithubLoading}
         isGoogleLoading={isGoogleLoading}
-      ></OauthProvider>
+      />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email Field */}

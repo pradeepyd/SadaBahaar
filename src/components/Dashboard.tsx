@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Music, Share2, SkipForward, Play, Pause, Hourglass } from "lucide-react";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 import { SongQueue } from "@/components/song-queue";
@@ -18,8 +18,7 @@ import { AddSongForm } from "./add-song-form";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { Sidebar } from "@/components/sidebar";
-import { differenceInSeconds, subMinutes, isAfter, addMinutes } from 'date-fns';
-import Link from "next/link";
+import { differenceInSeconds, subMinutes, addMinutes } from 'date-fns';
 import { CreateRoomButton } from "@/components/CreateRoomButton";
 import { useRouter } from "next/navigation";
 
@@ -45,9 +44,7 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
   const { user } = useUser();
   const [queue, setQueue] = useState<Stream[]>([]);
   const [currentSong, setCurrentSong] = useState<Stream | null>(null);
-  const [manualCurrentSongId, setManualCurrentSongId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<string>("queue");
   const [liked, setLiked] = useState<Stream[]>([]);
   const [uploads, setUploads] = useState<Stream[]>([]);
@@ -68,17 +65,10 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
 
   const shareUrl = typeof window !== "undefined" ? window.location.origin + "/room/" + roomId : "";
 
-  // Helper: find first available song (no cooldown)
-  const findFirstAvailableSong = () => {
-    if (!queue.length) return null;
-    return getSortedQueue()[0] || null;
-  };
-
   // Fetch streams from API
-  const fetchStreams = async () => {
+  const fetchStreams = useCallback(async () => {
     if (!user?.id || !roomId) return;
     try {
-      setLoading(true);
       const res = await fetch(`/api/streams?roomId=${roomId}`);
       const data = await res.json();
       if (res.ok) {
@@ -93,24 +83,20 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
         // Only set currentSong if it is null or if it was removed from the queue (not just because the order changed)
         const cur = currentSongRef.current;
         if (!cur && sortedStreams.length > 0) {
-          console.log('[fetchStreams] Setting currentSong (was null):', sortedStreams[0]);
           setCurrentSong(sortedStreams[0]);
         } else if (
           cur &&
           !sortedStreams.some((s: Stream) => s.id === cur.id) &&
           sortedStreams.length > 0
         ) {
-          console.log('[fetchStreams] Current song was removed from queue, setting to:', sortedStreams[0]);
           setCurrentSong(sortedStreams[0]);
         } else {
           // Do not update currentSong if it is still present in the queue, even if the order changed
-          console.log('[fetchStreams] Not updating currentSong. Still present:', cur?.id);
         }
         if (manualCurrentSongIdRef.current) {
           const manualSong = sortedStreams.find((s: Stream) => s.id === manualCurrentSongIdRef.current);
           if (manualSong) {
             if (!cur || cur.id !== manualSong.id) {
-              console.log('[fetchStreams] Manual selection active, setting currentSong:', manualSong);
               setCurrentSong(manualSong);
             }
             return;
@@ -123,16 +109,13 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
       } else {
         toast.error("Failed to fetch streams");
       }
-    } catch (error) {
-      console.error("Error fetching streams:", error);
+    } catch {
       toast.error("Error fetching streams");
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user?.id, roomId]);
 
   // Handle upvote
-  const handleUpvote = async (id: string) => {
+  const handleUpvote = useCallback(async (id: string) => {
     try {
       await fetch("/api/streams/upvote", {
         method: "POST",
@@ -143,14 +126,13 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
       });
       toast.success("Vote registered!");
       fetchStreams(); // Refresh the queue
-    } catch (error) {
-      console.error("Error upvoting:", error);
+    } catch {
       toast.error("Failed to register vote");
     }
-  };
+  }, [roomId, fetchStreams]);
 
   // Handle downvote
-  const handleDownvote = async (id: string) => {
+  const handleDownvote = useCallback(async (id: string) => {
     try {
       await fetch("/api/streams/downvote", {
         method: "POST",
@@ -161,24 +143,23 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
       });
       toast.success("Vote registered!");
       fetchStreams(); // Refresh the queue
-    } catch (error) {
-      console.error("Error downvoting:", error);
+    } catch {
       toast.error("Failed to register vote");
     }
-  };
+  }, [roomId, fetchStreams]);
 
   // Helper: sort queue by votes and recency
-  const getSortedQueue = () => {
+  const getSortedQueue = useCallback(() => {
     return [...queue].sort((a, b) => {
       const aScore = a.upvotes - a.downvotes;
       const bScore = b.upvotes - b.downvotes;
       if (bScore !== aScore) return bScore - aScore;
       return new Date(a.lastPlayedAt || 0).getTime() - new Date(b.lastPlayedAt || 0).getTime();
     });
-  };
+  }, [queue]);
 
   // Helper: find next available song (no cooldown)
-  const findNextAvailableSong = (fromId: string | null) => {
+  const findNextAvailableSong = useCallback((fromId: string | null) => {
     const sorted = getSortedQueue();
     if (!sorted.length) return null;
     if (!fromId) return sorted[0];
@@ -192,7 +173,7 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
     }
     // If all songs have been played, allow repeat
     return sorted[(idx + 1) % sorted.length];
-  };
+  }, [getSortedQueue, lastPlayedSongId]);
 
   // Countdown timer for next available song
   const getNextAvailableTime = () => {
@@ -227,7 +208,6 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
   useEffect(() => {
     if (justEndedRef.current) {
       const nextSong = findNextAvailableSong(justEndedRef.current);
-      console.log('Next song selected:', nextSong);
       if (nextSong) {
         setCurrentSong(nextSong);
         manualCurrentSongIdRef.current = null;
@@ -243,7 +223,7 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
       }
       justEndedRef.current = null;
     }
-  }, [queue]);
+  }, [queue, lastPlayedSongId, findNextAvailableSong]);
 
   // Handle play next
   const handlePlayNext = async () => {
@@ -278,7 +258,7 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
         if (data.type === "vote" || data.type === "queue") {
           fetchStreams();
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     };
@@ -288,12 +268,12 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
     return () => {
       ws.close();
     };
-  }, [user?.id]);
+  }, [user?.id, fetchStreams]);
 
   // Initial fetch
   useEffect(() => {
     fetchStreams();
-  }, [user?.id]);
+  }, [user?.id, fetchStreams]);
 
   // Refresh queue every 30 seconds
   useEffect(() => {
@@ -302,45 +282,48 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [user?.id]);
+  }, [user?.id, fetchStreams]);
 
   // Fetch liked streams
-  const fetchLiked = async () => {
+  const fetchLiked = useCallback(async () => {
     if (!user?.id || !roomId) return;
     try {
-      setLoading(true);
       const res = await fetch(`/api/streams/liked?roomId=${roomId}`);
       const data = await res.json();
       if (res.ok) setLiked(data.streams);
-    } finally { setLoading(false); }
-  };
+    } catch (error) {
+      console.error('Error fetching liked streams:', error);
+    }
+  }, [user?.id, roomId]);
   // Fetch uploads
-  const fetchUploads = async () => {
+  const fetchUploads = useCallback(async () => {
     if (!user?.id || !roomId) return;
     try {
-      setLoading(true);
       const res = await fetch(`/api/streams/uploads?roomId=${roomId}`);
       const data = await res.json();
       if (res.ok) setUploads(data.streams);
-    } finally { setLoading(false); }
-  };
+    } catch (error) {
+      console.error('Error fetching uploads:', error);
+    }
+  }, [user?.id, roomId]);
   // Fetch recently played
-  const fetchRecent = async () => {
+  const fetchRecent = useCallback(async () => {
     if (!user?.id || !roomId) return;
     try {
-      setLoading(true);
       const res = await fetch(`/api/streams/recent?roomId=${roomId}`);
       const data = await res.json();
       if (res.ok) setRecent(data.streams);
-    } finally { setLoading(false); }
-  };
+    } catch (error) {
+      console.error('Error fetching recent streams:', error);
+    }
+  }, [user?.id, roomId]);
 
   // Add useEffect to fetch tab data
   useEffect(() => {
     if (tab === "liked") fetchLiked();
     if (tab === "uploads") fetchUploads();
     if (tab === "recent") fetchRecent();
-  }, [tab, user?.id]);
+  }, [tab, user?.id, fetchLiked, fetchUploads, fetchRecent]);
 
   // Handle manual song selection
   const handleSelectSong = (song: Stream) => {
@@ -423,7 +406,7 @@ export function CreatorDashboard({ roomId }: CreatorDashboardProps) {
   }
 
   return (
-    <div className="flex flex-col mt-16">
+    <div className="flex flex-col mt-4">
       {/* Prominent Share Room button at the top */}
       <div className="flex justify-end items-center mb-4 px-4">
         <Button

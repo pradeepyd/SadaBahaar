@@ -6,7 +6,6 @@ const isPublicRoute = createRouteMatcher(["/",'/sign-in(.*)','/sign-up(.*)',"/fo
 export default clerkMiddleware(async (auth, req) => {
   const user = auth();
   const userId = (await user).userId;
-  const url = new URL(req.url);
 
   // If user is authenticated and on a public route, redirect to dashboard
   if(userId && isPublicRoute(req)){

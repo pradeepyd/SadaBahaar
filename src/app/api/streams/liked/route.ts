@@ -12,10 +12,10 @@ export async function GET(req: NextRequest) {
       where: { userId: user.id },
       select: { streamId: true }
     });
-    const streamIds = upvotes.map((u: any) => u.streamId);
+    const streamIds = upvotes.map((u: { streamId: string }) => u.streamId);
     if (streamIds.length === 0) return NextResponse.json({ streams: [] });
     const streams = await prisma.stream.findMany({
-      where: { id: { in: streamIds }, roomId } as any,
+      where: { id: { in: streamIds }, roomId },
       include: {
         _count: { select: { upvotes: true, downvotes: true } },
         upvotes: { where: { userId: user.id } },
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       }
     });
     // Map to frontend Stream shape
-    const mapped = streams.map((s: any) => ({
+    const mapped = streams.map((s) => ({
       id: s.id,
       title: s.title,
       extractedId: s.extractedId,
@@ -34,10 +34,10 @@ export async function GET(req: NextRequest) {
       haveDownvoted: s.downvotes.length > 0,
       url: s.url,
       type: s.type,
-      lastPlayedAt: s.lastPlayedAt,
+      lastPlayedAt: s.lastPlayedAt?.toISOString() || null,
     }));
     return NextResponse.json({ streams: mapped });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

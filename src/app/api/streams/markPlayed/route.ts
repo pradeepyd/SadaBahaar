@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-const { broadcastToAll } = require('@/ws-server');
+import { broadcastToAll } from '@/ws-server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
     if (!streamId || !roomId) return NextResponse.json({ error: 'Missing streamId or roomId' }, { status: 400 });
     // Only update if stream is in the room
     await prisma.stream.updateMany({
-      where: { id: streamId, roomId } as any,
-      data: { lastPlayedAt: new Date() } as any
+      where: { id: streamId, roomId } as { id: string; roomId: string },
+      data: { lastPlayedAt: new Date() } as { lastPlayedAt: Date }
     });
     // Set current song and start time for playback sync
     await prisma.room.update({
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // Broadcast queue update
     broadcastToAll({ type: 'queue', action: 'mark-played', streamId, roomId });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

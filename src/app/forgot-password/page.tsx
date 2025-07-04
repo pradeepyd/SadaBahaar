@@ -34,8 +34,12 @@ const ForgotPasswordPage: NextPage = () => {
         identifier: email,
       })
       setIsCodeSent(true)
-    } catch (err:any) {
-      setError(err?.errors?.[0]?.longMessage || "Failed to send code")
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errors' in err) {
+        setError((err as { errors?: Array<{ longMessage?: string }> })?.errors?.[0]?.longMessage || "Failed to send code")
+      } else {
+        setError("Failed to send code")
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -55,8 +59,12 @@ const ForgotPasswordPage: NextPage = () => {
     if(result?.status === "complete") {
         await setActive({ session: result.createdSessionId })
       }
-    } catch (err: any) {
-      setError(err?.errors?.[0]?.longMessage || "Failed to reset password")
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errors' in err) {
+        setError((err as { errors?: Array<{ longMessage?: string }> })?.errors?.[0]?.longMessage || "Failed to reset password")
+      } else {
+        setError("Failed to reset password")
+      }
     } finally {
       setIsSubmitting(false)
     }

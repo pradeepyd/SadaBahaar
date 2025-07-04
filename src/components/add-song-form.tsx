@@ -39,9 +39,14 @@ export function AddSongForm({ onSongAdded, roomId }: { onSongAdded?: () => void;
       if (onSongAdded) {
         onSongAdded();
       }
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-      toast.error(err.message || "Failed to add song");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Something went wrong");
+        toast.error(err.message || "Failed to add song");
+      } else {
+        setError("An unexpected error occurred.");
+        toast.error("Failed to add song");
+      }
     } finally {
       setLoading(false);
     }

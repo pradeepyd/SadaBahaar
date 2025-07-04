@@ -1,6 +1,6 @@
 "use client";
 
-import { SignIn, useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,8 +14,6 @@ import { Label } from "../ui/label";
 import { CardWrapper } from "../CardWrapper";
 import { OauthProvider } from "./oauth";
 import { FormError } from "./formError";
-import { toast } from "sonner";
-import ForgotPasswordComponent from "./forgot-password";
 import Link from "next/link";
 
 export const SignInForm = () => {
@@ -26,28 +24,21 @@ export const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGithubLoading, setIsGithubLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [password, setPassword] = useState("");
-  const { redirectToSignIn } = useClerk();
-  const [error, setError] = useState("");
 
-  function handleForgotPassword() {
-    router.push("/forgot-password");
-  }
   const oauthSignIn = async (provider: "oauth_google" | "oauth_github") => {
     try {
-      provider === "oauth_google"
-        ? setIsGoogleLoading(true)
-        : setIsGithubLoading(true);
+      if (provider === "oauth_google") {
+        setIsGoogleLoading(true);
+      } else {
+        setIsGithubLoading(true);
+      }
 
       await signIn?.authenticateWithRedirect({
         strategy: provider,
         redirectUrl: "/sso-callback",
         redirectUrlComplete: "/dashboard",
       });
-    } catch (error) {
-      console.error(error);
+    } catch {
       setAuthError("OAuth authentication failed");
     } finally {
       setIsGoogleLoading(false);
@@ -84,12 +75,15 @@ export const SignInForm = () => {
         // console.error("Sign-in incomplete:", result);
         setAuthError("Sign-in could not be completed. Please try again.");
       }
-    } catch (error: any) {
-      // console.error("Sign-in error:", error);
-      setAuthError(
-        error.errors?.[0]?.message ||
-          "An error occurred during sign-in. Please try again."
-      );
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'errors' in error) {
+        setAuthError(
+          (error as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message ||
+            "An error occurred during sign-in. Please try again."
+        );
+      } else {
+        setAuthError("An error occurred during sign-in. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +101,7 @@ export const SignInForm = () => {
         onGoogleClick={() => oauthSignIn("oauth_google")}
         isGithubLoading={isGithubLoading}
         isGoogleLoading={isGoogleLoading}
-      ></OauthProvider>
+      />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Email Field */}
         <div className="space-y-3">

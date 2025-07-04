@@ -19,13 +19,11 @@ export async function POST(req: NextRequest) {
         provider: "Google"
       }
     });
-    // @ts-ignore: prisma.room is correct, false positive due to Prisma $extends
     const room = await prisma.room.create({
       data: { name, creatorId: user.id },
     });
     return NextResponse.json({ id: room.id, name: room.name, creatorId: room.creatorId });
-  } catch (error) {
-    console.error('Room creation error:', error);
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

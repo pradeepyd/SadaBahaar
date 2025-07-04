@@ -26,47 +26,12 @@ interface SongQueueProps {
 }
 
 export function SongQueue({ songs = [], onUpvote, onDownvote, currentSongId, onSelectSong }: SongQueueProps) {
-  const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [optimisticVotes, setOptimisticVotes] = useState<Record<string, { upvotes: number; downvotes: number; haveUpvoted: boolean; haveDownvoted: boolean }>>({});
   const [now, setNow] = useState<Date>(new Date());
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleUpvote = async (id: string) => {
-    const song = songs.find(s => s.id === id);
-    if (!song) return;
-    setLoadingId(id);
-    setOptimisticVotes(prev => ({
-      ...prev,
-      [id]: {
-        upvotes: song.haveUpvoted ? song.upvotes - 1 : song.upvotes + 1,
-        downvotes: song.haveDownvoted ? song.downvotes - 1 : song.downvotes,
-        haveUpvoted: !song.haveUpvoted,
-        haveDownvoted: false
-      }
-    }));
-    await onUpvote(id);
-    setLoadingId(null);
-  };
-  const handleDownvote = async (id: string) => {
-    const song = songs.find(s => s.id === id);
-    if (!song) return;
-    setLoadingId(id);
-    setOptimisticVotes(prev => ({
-      ...prev,
-      [id]: {
-        upvotes: song.haveUpvoted ? song.upvotes - 1 : song.upvotes,
-        downvotes: song.haveDownvoted ? song.downvotes - 1 : song.downvotes + 1,
-        haveUpvoted: false,
-        haveDownvoted: !song.haveDownvoted
-      }
-    }));
-    await onDownvote(id);
-    setLoadingId(null);
-  };
 
   return (
     <div className="bg-[#faf6fe] dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 ">
@@ -81,11 +46,6 @@ export function SongQueue({ songs = [], onUpvote, onDownvote, currentSongId, onS
       ) : (
         <ul className="space-y-4 overflow-y-auto max-h-[calc(100vh-16rem)] lg:max-h-[calc(100vh-14rem)]">
           {songs.map((song: Stream) => {
-            const optimistic = optimisticVotes[song.id];
-            const upvotes = optimistic ? optimistic.upvotes : song.upvotes;
-            const downvotes = optimistic ? optimistic.downvotes : song.downvotes;
-            const haveUpvoted = optimistic ? optimistic.haveUpvoted : song.haveUpvoted;
-            const haveDownvoted = optimistic ? optimistic.haveDownvoted : song.haveDownvoted;
             // Timer logic
             let cooldown = 0;
             let cooldownStr = "";
@@ -123,30 +83,26 @@ export function SongQueue({ songs = [], onUpvote, onDownvote, currentSongId, onS
                   {/* <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{song.artist}</p> */}
                   <div className="flex items-center gap-4 mt-1">
                     <button
-                      onClick={e => { e.stopPropagation(); isAvailable && onUpvote(song.id); }}
+                      onClick={e => { e.stopPropagation(); if (isAvailable) onUpvote(song.id); }}
                       className={`flex items-center gap-1 ${
-                        haveUpvoted 
+                        song.haveUpvoted 
                           ? "text-purple-600 dark:text-purple-400" 
                           : "text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                       }`}
-                      disabled={loadingId === song.id}
                     >
                       <ThumbsUp className="h-4 w-4" />
-                      <span className="text-sm">{upvotes}</span>
-                      {loadingId === song.id && <span className="ml-1 animate-spin">⏳</span>}
+                      <span className="text-sm">{song.upvotes}</span>
                     </button>
                     <button
-                      onClick={e => { e.stopPropagation(); isAvailable && onDownvote(song.id); }}
+                      onClick={e => { e.stopPropagation(); if (isAvailable) onDownvote(song.id); }}
                       className={`flex items-center gap-1 ${
-                        haveDownvoted 
+                        song.haveDownvoted 
                           ? "text-red-600 dark:text-red-400" 
                           : "text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                       }`}
-                      disabled={loadingId === song.id}
                     >
                       <ThumbsDown className="h-4 w-4" />
-                      <span className="text-sm">{downvotes}</span>
-                      {loadingId === song.id && <span className="ml-1 animate-spin">⏳</span>}
+                      <span className="text-sm">{song.downvotes}</span>
                     </button>
                     {isAvailable && (
                       <button

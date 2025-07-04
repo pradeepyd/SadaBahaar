@@ -1,24 +1,24 @@
 // Use CommonJS require, not import
-const { WebSocketServer } = require('ws');
+import { WebSocketServer, WebSocket } from 'ws';
+import { pathToFileURL } from "url";
 
-let wss: any;
-if (require.main === module) {
+let wss: WebSocketServer | undefined;
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   wss = new WebSocketServer({ port: 3001 });
-  wss.on('connection', (ws: any) => {
-    ws.on('message', (message: any) => {
+  wss.on('connection', (ws: WebSocket) => {
+    ws.on('message', () => {
       // Handle incoming messages if needed
     });
   });
-  console.log('WebSocket server running on ws://localhost:3001');
 }
 
-function broadcastToAll(data: any) {
+function broadcastToAll(data: unknown) {
   if (!wss) return;
-  wss.clients.forEach((client: any) => {
+  wss.clients.forEach((client: WebSocket) => {
     if (client.readyState === 1) {
       client.send(JSON.stringify(data));
     }
   });
 }
 
-module.exports = { broadcastToAll }; 
+export { broadcastToAll }; 

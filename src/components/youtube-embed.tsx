@@ -12,10 +12,10 @@ interface YouTubeEmbedProps {
 
 export function YouTubeEmbed({ youtubeId, onEnded, isPlaying = true, startSeconds }: YouTubeEmbedProps) {
   const playerRef = useRef<YouTube>(null)
-  const ytPlayer = useRef<any>(null);
+  const ytPlayer = useRef<YT.Player | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
 
-  const handleReady = (event: any) => {
+  const handleReady = (event: YT.PlayerEvent) => {
     ytPlayer.current = event.target;
     setPlayerReady(true);
     // Seek to startSeconds if provided
@@ -37,12 +37,17 @@ export function YouTubeEmbed({ youtubeId, onEnded, isPlaying = true, startSecond
     ) {
       timeout = setTimeout(() => {
         try {
-          if (typeof startSeconds === 'number' && startSeconds > 0) {
+          if (
+            ytPlayer.current &&
+            typeof startSeconds === 'number' &&
+            startSeconds > 0
+          ) {
             ytPlayer.current.seekTo(startSeconds, true);
           }
-          ytPlayer.current.playVideo();
+          if (ytPlayer.current) {
+            ytPlayer.current.playVideo();
+          }
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.error('YouTube player error:', err);
         }
       }, 100); // 100ms delay

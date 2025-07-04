@@ -13,7 +13,7 @@ export default function Dashboard() {
   return (
     <div>
        <NavBar />
-    <div className="flex flex-col min-h-screen bg-background mt-10">
+    <div className="flex flex-col min-h-screen bg-background mt-4">
       <div className="flex min-h-screen bg-background text-foreground">
         <CreatorDashboard/>
       </div>

@@ -2,7 +2,7 @@ import prisma from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from 'zod';
-const { broadcastToAll } = require('@/ws-server');
+import { broadcastToAll } from '@/ws-server';
 
 const UpvoteSchema = z.object({
     streamId: z.string(),

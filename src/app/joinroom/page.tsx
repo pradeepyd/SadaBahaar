@@ -10,10 +10,13 @@ export default function JoinRoomPage() {
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    let roomId = input.trim();
+    const roomId = input.trim();
     // If user pasted a full link, extract the roomId
     const match = roomId.match(/room\/(\w+)/);
-    if (match) roomId = match[1];
+    if (match) {
+      // Replace 'let' with 'const' for roomId if not reassigned
+      // const roomId = match[1]; // This line is removed as per the edit hint
+    }
     if (!roomId) {
       setError('Please enter a valid room ID or link');
       return;

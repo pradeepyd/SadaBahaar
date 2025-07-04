@@ -2,7 +2,7 @@ import prisma from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-const { broadcastToAll } = require('@/ws-server');
+import { broadcastToAll } from '@/ws-server';
 
 const DownvoteSchema = z.object({
   streamId: z.string(),
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     
     // Find the stream in the room
     const stream = await prisma.stream.findFirst({
-      where: { id: streamId, roomId } as any
+      where: { id: streamId, roomId } as unknown as { id: string; roomId: string }
     });
     if (!stream) {
       return NextResponse.json({ error: 'Stream not found in this room' }, { status: 404 });

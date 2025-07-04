@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     if (!user?.id || !roomId) return NextResponse.json({ streams: [] });
     const fiveMinutesAgo = subMinutes(new Date(), 5);
     const streams = await prisma.stream.findMany({
-      where: { userId: user.id, roomId } as any,
+      where: { userId: user.id, roomId } as { userId: string; roomId: string },
       include: {
         _count: { select: { upvotes: true, downvotes: true } },
         upvotes: { where: { userId: user.id } },
@@ -18,9 +18,9 @@ export async function GET(req: NextRequest) {
       }
     });
     // Only include streams with lastPlayedAt in the last 5 minutes
-    const recent = (streams as any[]).filter(s => s.lastPlayedAt && new Date(s.lastPlayedAt) >= fiveMinutesAgo);
+    const recent = streams.filter(s => s.lastPlayedAt && s.lastPlayedAt >= fiveMinutesAgo);
     // Map to frontend Stream shape
-    const mapped = recent.map((s: any) => ({
+    const mapped = recent.map((s) => ({
       id: s.id,
       title: s.title,
       extractedId: s.extractedId,
@@ -31,10 +31,10 @@ export async function GET(req: NextRequest) {
       haveDownvoted: s.downvotes.length > 0,
       url: s.url,
       type: s.type,
-      lastPlayedAt: s.lastPlayedAt,
+      lastPlayedAt: s.lastPlayedAt?.toISOString() || null,
     }));
     return NextResponse.json({ streams: mapped });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 
