@@ -13,7 +13,7 @@
     "@clerk/nextjs": "^6.21.0",
     "@heroui/button": "^2.2.20",
     "@heroui/input": "^2.4.20",
-    "@hookform/resolvers": "^5.1.1",
+    "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "6.4.1",
     "@prisma/extension-accelerate": "^1.2.2",
     "@radix-ui/react-dialog": "^1.1.6",
