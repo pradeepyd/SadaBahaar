@@ -1,9 +1,12 @@
 "use client";
 
 import { useSignIn } from "@clerk/nextjs";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { signInSchema } from "../../../schemas/signInSchema";
+import * as z from "zod";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -46,13 +49,14 @@ export const SignInForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
     defaultValues: {
       identifier: "",
       password: "",
     },
   });
-  const onSubmit = async (data: { identifier: string; password: string }) => {
+  const onSubmit = async (data: z.infer<typeof signInSchema>) => {
     if (!isLoaded) return;
 
     setIsSubmitting(true);
