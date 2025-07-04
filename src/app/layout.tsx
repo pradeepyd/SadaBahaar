@@ -10,7 +10,7 @@ import { NavBar } from "@/components/navBar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bazzao - Interactive Music Streaming Platform",
+  title: "Fanmix - Interactive Music Streaming Platform",
   description: "Let your fans choose what plays next in your music streams",
 };
 
