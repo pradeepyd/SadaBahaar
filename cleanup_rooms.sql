@@ -1,1 +1,0 @@
-DELETE FROM "Room" WHERE "creatorId" IS NULL; 
