@@ -7,7 +7,14 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+const allowedOrigins = [
+  "https://fanmix-zeta.vercel.app"
+];
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 
 // Root endpoint for status
 app.get('/', (_req: Request, res: Response) => {
